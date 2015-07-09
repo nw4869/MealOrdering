@@ -7,7 +7,7 @@ public interface Admin {
 
     void modifyPassword(User user, String newPwd);
 
-    void registerUser(User user);
+    void registerUser(String username, String password);
 
     void disableUser(User user);
 

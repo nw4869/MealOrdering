@@ -1,4 +1,4 @@
-package com.nightwind.mealordering.service.impl;
+package com.nightwind.mealordering.service;
 
 import com.nightwind.mealordering.Entity.UserEntity;
 import com.nightwind.mealordering.service.User;
@@ -14,11 +14,21 @@ import java.util.List;
  */
 public class UserImpl implements User {
 
+    public static String STATUS_NORMAL = "normal";
+
+    public static String STATUS_DISABLE = "disable";
+
+    public static final int ADMIN = 1;
+
     private UserEntity entity;
 
     public UserImpl(String username) {
         entity = new UserEntity();
         entity.setUsername(username);
+    }
+
+    UserImpl(UserEntity entity) {
+        this.entity = entity;
     }
 
     private static UserEntity getEntity(String username) {
@@ -133,10 +143,10 @@ public class UserImpl implements User {
     }
 
     public boolean isEnable() {
-        return entity.getStatus().equals("normal");
+        return entity.getStatus().equals(STATUS_NORMAL);
     }
 
     public boolean isAdmin() {
-        return false;
+        return entity.getAdmin() == ADMIN;
     }
 }

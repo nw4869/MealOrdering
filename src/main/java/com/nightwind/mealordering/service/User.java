@@ -1,7 +1,5 @@
 package com.nightwind.mealordering.service;
 
-import com.nightwind.mealordering.service.impl.UserImpl;
-
 /**
  * Created by nightwind on 15/7/6.
  */
@@ -24,5 +22,4 @@ public interface User {
     boolean isEnable();
 
     boolean isAdmin();
-
 }

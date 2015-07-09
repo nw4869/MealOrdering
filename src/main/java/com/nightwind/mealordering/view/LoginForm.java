@@ -2,7 +2,7 @@ package com.nightwind.mealordering.view;
 
 import com.nightwind.mealordering.Entity.UserEntity;
 import com.nightwind.mealordering.service.User;
-import com.nightwind.mealordering.service.impl.UserImpl;
+import com.nightwind.mealordering.service.UserImpl;
 import com.nightwind.mealordering.utils.HibernateUtil;
 
 import javax.swing.*;

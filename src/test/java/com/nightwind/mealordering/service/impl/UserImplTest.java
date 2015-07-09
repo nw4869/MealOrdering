@@ -1,6 +1,7 @@
 package com.nightwind.mealordering.service.impl;
 
 import com.nightwind.mealordering.service.User;
+import com.nightwind.mealordering.service.UserImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -1,5 +1,7 @@
 package com.nightwind.mealordering.view;
 
+import com.nightwind.mealordering.service.UserManager;
+
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.ActionEvent;
@@ -46,6 +48,7 @@ public class MainForm {
     private void setupMenu() {
         JMenuBar menubar = new JMenuBar();
         JMenu userMenu = new JMenu("User");
+        // user info item
         JMenuItem userInfoItem = new JMenuItem("User Info");
         userInfoItem.addActionListener(new ActionListener() {
             @Override
@@ -54,6 +57,20 @@ public class MainForm {
             }
         });
         userMenu.add(userInfoItem);
+
+        // set up admin menus
+        if (UserManager.getInstance().getCurrentUser().isAdmin()) {
+            // user admin
+            JMenuItem userAdminItem = new JMenuItem("User Admin");
+            userAdminItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new UserAdminForm().show();
+                }
+            });
+            userMenu.add(userAdminItem);
+        }
+
         menubar.add(userMenu);
 
         frame.setJMenuBar(menubar);
