@@ -75,6 +75,10 @@ public class LoginForm {
         HibernateUtil.getSessionFactory();
     }
 
+    public static void show() {
+        frame.setVisible(true);
+    }
+
     public void setData(UserEntity data) {
         usernameFiled.setText(data.getName());
         passwordField.setText(data.getPassword());

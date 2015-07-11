@@ -69,7 +69,31 @@ public class MainForm {
                 }
             });
             userMenu.add(userAdminItem);
+
+            // dishes admin
+            JMenuItem dishesMangeItem = new JMenuItem("Dish Manage");
+            dishesMangeItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+//                    new DishesForm();
+                    DishesForm.getInstance();
+                }
+            });
+            JMenu dishMenu = new JMenu("Dish");
+            dishMenu.add(dishesMangeItem);
+            menubar.add(dishMenu);
         }
+
+
+        JMenuItem logoutMen = new JMenuItem("Logout");
+        userMenu.add(logoutMen);
+        logoutMen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                LoginForm.show();
+            }
+        });
 
         menubar.add(userMenu);
 

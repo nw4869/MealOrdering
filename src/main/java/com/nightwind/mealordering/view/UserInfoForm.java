@@ -18,7 +18,7 @@ public class UserInfoForm {
     private JPanel panel;
     private JTextField textField1;
     private JButton updateButton;
-//    private JButton queryButton;
+    //    private JButton queryButton;
     private JLabel usernameLabel;
     private JPasswordField passwordField;
 
