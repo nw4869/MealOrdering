@@ -3,17 +3,23 @@ package com.nightwind.mealordering.service;
 /**
  * Created by nightwind on 15/7/6.
  */
-public interface Dish {
-    
+public interface Dish extends Subject<Dish> {
+
+    Integer getId();
+
     String getName();
+
+    void setName(String name);
 
     Double getCost();
 
+    void setCost(double cost);
+
     String getInfo();
 
-    String getStatus();
+    void setInfo(String info);
 
-    Dish save(Dish dish);
+    String getStatus();
 
     void disable();
 

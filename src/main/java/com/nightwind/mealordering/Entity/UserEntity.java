@@ -54,17 +54,28 @@ public class UserEntity {
         this.status = status;
     }
 
+    @Basic
+    @Column(name = "admin", nullable = true, insertable = true, updatable = true, length = 11)
+    public Integer getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Integer admin) {
+        this.admin = admin;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserEntity that = (UserEntity) o;
+        UserEntity entity = (UserEntity) o;
 
-        if (username != null ? !username.equals(that.username) : that.username != null) return false;
-        if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+        if (username != null ? !username.equals(entity.username) : entity.username != null) return false;
+        if (password != null ? !password.equals(entity.password) : entity.password != null) return false;
+        if (name != null ? !name.equals(entity.name) : entity.name != null) return false;
+        if (status != null ? !status.equals(entity.status) : entity.status != null) return false;
+        if (admin != null ? !admin.equals(entity.admin) : entity.admin != null) return false;
 
         return true;
     }
@@ -75,16 +86,7 @@ public class UserEntity {
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (admin != null ? admin.hashCode() : 0);
         return result;
-    }
-
-    @Basic
-    @Column(name = "admin", nullable = true, insertable = true, updatable = true, length = 11)
-    public Integer getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Integer admin) {
-        this.admin = admin;
     }
 }

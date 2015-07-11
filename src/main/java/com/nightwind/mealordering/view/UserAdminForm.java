@@ -37,7 +37,6 @@ public class UserAdminForm {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
         users = UserManager.getInstance().getUsers();
 
         table1 = new JTable(new AbstractTableModel() {
