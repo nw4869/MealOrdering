@@ -1,8 +1,6 @@
-package com.nightwind.mealordering.service;
+package com.nightwind.mealordering.model;
 
 import com.nightwind.mealordering.Entity.UserEntity;
-import com.nightwind.mealordering.service.User;
-import com.nightwind.mealordering.service.UserManager;
 import com.nightwind.mealordering.utils.HibernateUtil;
 import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;

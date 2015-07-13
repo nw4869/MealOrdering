@@ -6,10 +6,10 @@
   <session-factory>
     <property name="connection.url">jdbc:mysql://localhost:3306/mealordering</property>
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-      <property name="connection.username">root</property>
-      <property name="connection.password">4869</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">4869</property>
 
-      <mapping class="com.nightwind.mealordering.Entity.DishEntity"/>
+    <mapping class="com.nightwind.mealordering.Entity.DishEntity"/>
     <mapping class="com.nightwind.mealordering.Entity.MenuEntity"/>
     <mapping class="com.nightwind.mealordering.Entity.OrderEntity"/>
     <mapping class="com.nightwind.mealordering.Entity.UserEntity"/>

@@ -10,10 +10,11 @@ import javax.persistence.*;
 public class MenuEntity {
     private int id;
     private int dishId;
-    private String dishNumber;
+    private int dishNumber;
     private int orderId;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, insertable = true, updatable = true)
     public int getId() {
         return id;
@@ -34,12 +35,12 @@ public class MenuEntity {
     }
 
     @Basic
-    @Column(name = "dish_number", nullable = false, insertable = true, updatable = true, length = 45)
-    public String getDishNumber() {
+    @Column(name = "dish_number", nullable = false, insertable = true, updatable = true)
+    public int getDishNumber() {
         return dishNumber;
     }
 
-    public void setDishNumber(String dishNumber) {
+    public void setDishNumber(int dishNumber) {
         this.dishNumber = dishNumber;
     }
 
@@ -62,8 +63,8 @@ public class MenuEntity {
 
         if (id != that.id) return false;
         if (dishId != that.dishId) return false;
+        if (dishNumber != that.dishNumber) return false;
         if (orderId != that.orderId) return false;
-        if (dishNumber != null ? !dishNumber.equals(that.dishNumber) : that.dishNumber != null) return false;
 
         return true;
     }
@@ -72,7 +73,7 @@ public class MenuEntity {
     public int hashCode() {
         int result = id;
         result = 31 * result + dishId;
-        result = 31 * result + (dishNumber != null ? dishNumber.hashCode() : 0);
+        result = 31 * result + dishNumber;
         result = 31 * result + orderId;
         return result;
     }

@@ -1,8 +1,8 @@
 package com.nightwind.mealordering.view;
 
 import com.nightwind.mealordering.Entity.UserEntity;
-import com.nightwind.mealordering.service.User;
-import com.nightwind.mealordering.service.UserImpl;
+import com.nightwind.mealordering.model.User;
+import com.nightwind.mealordering.model.UserImpl;
 import com.nightwind.mealordering.utils.HibernateUtil;
 
 import javax.swing.*;
@@ -60,6 +60,7 @@ public class LoginForm {
         } catch (ExceptionInInitializerError e) {
             JOptionPane.showMessageDialog(null, "Database connect failed", "Database connect failed", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(null, e.getMessage(), "Database connect failed", JOptionPane.ERROR_MESSAGE);
         }
     }

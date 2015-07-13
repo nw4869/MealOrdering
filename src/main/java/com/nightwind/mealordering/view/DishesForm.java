@@ -1,11 +1,10 @@
 package com.nightwind.mealordering.view;
 
 import com.nightwind.mealordering.controller.DishesController;
-import com.nightwind.mealordering.service.Dish;
-import com.nightwind.mealordering.service.DishManager;
+import com.nightwind.mealordering.model.Dish;
+import com.nightwind.mealordering.model.DishManager;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -13,7 +12,7 @@ import java.awt.event.ActionListener;
  * Created by nightwind on 15/7/9.
  */
 public class DishesForm implements Dish.Listener<Dish> {
-    private JFrame frame;
+    private static JFrame frame;
     private DishesController controller;
     private JPanel panel;
     private JTable table1;
@@ -34,7 +33,10 @@ public class DishesForm implements Dish.Listener<Dish> {
         this.controller = controller;
     }
 
-    public static void getInstance() {
+    public static void show() {
+        if (frame != null) {
+            frame.dispose();
+        }
         DishesController controller = new DishesController();
         DishManager model = DishManager.getInstance();
         controller.setModel(model);
@@ -44,6 +46,12 @@ public class DishesForm implements Dish.Listener<Dish> {
         model.attach(view);
 
         view.createAndShowGUI();
+    }
+
+    public static void dispose() {
+        if (frame != null) {
+            frame.dispose();
+        }
     }
 
     private void initMVC() {
@@ -68,7 +76,7 @@ public class DishesForm implements Dish.Listener<Dish> {
                 controller.delete();
             }
         });
-        JFrame frame;
+
         frame = new JFrame("Dishes Mange");
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -97,7 +105,7 @@ public class DishesForm implements Dish.Listener<Dish> {
 
     public static void main(String[] args) {
 //        DishesController controller = new DishesController();
-//        DishManager model = DishManager.getInstance();
+//        DishManager model = DishManager.show();
 //        controller.setModel(model);
 //        DishesForm view = new DishesForm(controller);
 //        controller.setView(view);
@@ -108,7 +116,7 @@ public class DishesForm implements Dish.Listener<Dish> {
 
 //        new DishesForm();
 
-        getInstance();
+        show();
     }
 
     @Override

@@ -12,8 +12,10 @@ public class OrderEntity {
     private int id;
     private Timestamp time;
     private String username;
+    private String status;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, insertable = true, updatable = true)
     public int getId() {
         return id;
@@ -43,6 +45,16 @@ public class OrderEntity {
         this.username = username;
     }
 
+    @Basic
+    @Column(name = "status", nullable = false, insertable = true, updatable = true, length = 45)
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,6 +65,7 @@ public class OrderEntity {
         if (id != that.id) return false;
         if (time != null ? !time.equals(that.time) : that.time != null) return false;
         if (username != null ? !username.equals(that.username) : that.username != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
 
         return true;
     }
@@ -62,6 +75,7 @@ public class OrderEntity {
         int result = id;
         result = 31 * result + (time != null ? time.hashCode() : 0);
         result = 31 * result + (username != null ? username.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
         return result;
     }
 }

@@ -1,4 +1,4 @@
-package com.nightwind.mealordering.service;
+package com.nightwind.mealordering.model;
 
 import com.nightwind.mealordering.Entity.UserEntity;
 import com.nightwind.mealordering.utils.HibernateUtil;
@@ -53,7 +53,7 @@ public abstract class UserManager implements Admin{
                 tx = session.beginTransaction();
 
                 Criteria cr = session.createCriteria(UserEntity.class);
-                cr.add(Restrictions.ne("admin", UserImpl.ADMIN));
+//                cr.add(Restrictions.ne("admin", UserImpl.ADMIN));
                 List<UserEntity> entities = cr.list();
                 for (UserEntity entity: entities) {
                     users.add(new UserImpl(entity));

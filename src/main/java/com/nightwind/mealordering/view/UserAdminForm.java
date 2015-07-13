@@ -1,7 +1,7 @@
 package com.nightwind.mealordering.view;
 
-import com.nightwind.mealordering.service.User;
-import com.nightwind.mealordering.service.UserManager;
+import com.nightwind.mealordering.model.User;
+import com.nightwind.mealordering.model.UserManager;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -31,6 +31,10 @@ public class UserAdminForm {
             frame.pack();
         }
         frame.setVisible(true);
+    }
+
+    public void dispose() {
+        frame.dispose();
     }
 
     public static void main(String[] args) {
@@ -69,6 +73,26 @@ public class UserAdminForm {
                         break;
                 }
                 return obj;
+            }
+
+            @Override
+            public String getColumnName(int column) {
+                String name = super.getColumnName(column);
+                switch (column) {
+                    case 0:
+                        name = "username";
+                        break;
+                    case 1:
+                        name = "name";
+                        break;
+                    case 2:
+                        name = "enable";
+                        break;
+                    case 3:
+                        name = "isAdmin";
+                        break;
+                }
+                return name;
             }
         });
     }

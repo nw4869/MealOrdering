@@ -1,4 +1,4 @@
-package com.nightwind.mealordering.service;
+package com.nightwind.mealordering.model;
 
 import com.nightwind.mealordering.Entity.DishEntity;
 import com.nightwind.mealordering.utils.HibernateUtil;
@@ -18,6 +18,8 @@ public abstract class DishManager implements Subject<Dish> {
 
     public abstract List<Dish> getDishes();
 
+    public abstract List<Dish> getAvailableDishes();
+
     public abstract void insert(String name, double cost, String info);
 
     public abstract void delete(Dish dish);
@@ -26,8 +28,7 @@ public abstract class DishManager implements Subject<Dish> {
 
         private List<Listener<Dish>> listeners = new ArrayList<>();
 
-        @Override
-        public List<Dish> getDishes() {
+        private List<Dish> getDishes(boolean availableOnly) {
             List<Dish> dishes = new ArrayList<>();
             Session session = HibernateUtil.getSessionFactory().openSession();
             Transaction tx = null;
@@ -37,7 +38,9 @@ public abstract class DishManager implements Subject<Dish> {
                 Criteria cr = session.createCriteria(DishEntity.class);
                 List<DishEntity> entities = cr.list();
                 for (DishEntity entity: entities) {
-                    dishes.add(new DefaultDish(entity));
+                    if (!availableOnly || entity.getStatus().equals("normal")) {
+                        dishes.add(new DefaultDish(entity));
+                    }
                 }
 
                 tx.commit();
@@ -48,6 +51,16 @@ public abstract class DishManager implements Subject<Dish> {
                 session.close();
             }
             return dishes;
+        }
+
+        @Override
+        public List<Dish> getDishes() {
+            return getDishes(false);
+        }
+
+        @Override
+        public List<Dish> getAvailableDishes() {
+            return getDishes(true);
         }
 
         @Override

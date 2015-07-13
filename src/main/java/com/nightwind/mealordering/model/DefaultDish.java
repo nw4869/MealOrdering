@@ -1,9 +1,8 @@
-package com.nightwind.mealordering.service;
+package com.nightwind.mealordering.model;
 
 import com.nightwind.mealordering.Entity.DishEntity;
 import com.nightwind.mealordering.utils.HibernateUtil;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -43,6 +42,7 @@ public class DefaultDish implements Dish {
         } finally {
             session.close();
         }
+        session.close();
         return entity;
     }
 

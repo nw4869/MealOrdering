@@ -1,8 +1,8 @@
 package com.nightwind.mealordering.view;
 
 import com.nightwind.mealordering.Entity.UserEntity;
-import com.nightwind.mealordering.service.User;
-import com.nightwind.mealordering.service.UserManager;
+import com.nightwind.mealordering.model.User;
+import com.nightwind.mealordering.model.UserManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -21,6 +21,7 @@ public class UserInfoForm {
     //    private JButton queryButton;
     private JLabel usernameLabel;
     private JPasswordField passwordField;
+    private JFrame frame;
 
     public UserInfoForm() {
 
@@ -44,6 +45,7 @@ public class UserInfoForm {
                     getData(entity);
                     currentUser.updatePassword(entity.getPassword());
                 }
+                JOptionPane.showMessageDialog(null, "update success");
             }
         });
 //        queryButton.addActionListener(new ActionListener() {
@@ -55,7 +57,7 @@ public class UserInfoForm {
     }
 
     public void show() {
-        JFrame frame = new JFrame("User Info");
+        frame = new JFrame("User Info");
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();
@@ -87,5 +89,9 @@ public class UserInfoForm {
         if (passwordField.getPassword() != null ? !String.valueOf(passwordField.getPassword()).equals(data.getPassword()) : data.getPassword() != null)
             return true;
         return false;
+    }
+
+    public void dispose() {
+        frame.dispose();
     }
 }

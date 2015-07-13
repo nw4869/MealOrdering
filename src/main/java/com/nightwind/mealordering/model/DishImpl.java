@@ -1,4 +1,4 @@
-package com.nightwind.mealordering.service;
+package com.nightwind.mealordering.model;
 
 import com.nightwind.mealordering.Entity.DishEntity;
 

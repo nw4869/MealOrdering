@@ -1,7 +1,7 @@
-package com.nightwind.mealordering.service.impl;
+package com.nightwind.mealordering.model.impl;
 
-import com.nightwind.mealordering.service.User;
-import com.nightwind.mealordering.service.UserImpl;
+import com.nightwind.mealordering.model.User;
+import com.nightwind.mealordering.model.UserImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

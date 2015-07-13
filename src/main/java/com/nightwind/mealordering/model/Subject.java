@@ -1,4 +1,4 @@
-package com.nightwind.mealordering.service;
+package com.nightwind.mealordering.model;
 
 /**
  * Created by nightwind on 15/7/10.

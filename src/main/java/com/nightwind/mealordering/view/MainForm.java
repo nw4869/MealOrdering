@@ -1,19 +1,51 @@
 package com.nightwind.mealordering.view;
 
-import com.nightwind.mealordering.service.UserManager;
+import com.nightwind.mealordering.controller.OrderController;
+import com.nightwind.mealordering.model.*;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.util.List;
 
 /**
  * Created by nightwind on 15/7/8.
  */
-public class MainForm {
+public class MainForm implements ActionListener{
     private JFrame frame;
     private JPanel panel;
-    private JTable table1;
+    private JList list1;
+    private JButton commitButton;
+    private JLabel costLabel;
+    private JButton resetButton;
+    private JButton refreshButton;
+    private Order model;
+    private OrderController controller;
+
+    private double cost = 0;
+    private UserAdminForm userAdminForm;
+    private UserInfoForm userInfoForm;
+
+    public MainForm() {
+        commitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.commit();
+                JOptionPane.showMessageDialog(null, "commit success");
+            }
+        });
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.reset();
+            }
+        });
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.refresh();
+            }
+        });
+    }
 
     private void initFrame() {
         frame = new JFrame("MainForm");
@@ -26,25 +58,6 @@ public class MainForm {
         frame.pack();
     }
 
-    private void setupTable() {
-        table1.setModel(new AbstractTableModel() {
-            @Override
-            public int getRowCount() {
-                return 0;
-            }
-
-            @Override
-            public int getColumnCount() {
-                return 0;
-            }
-
-            @Override
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                return null;
-            }
-        });
-    }
-
     private void setupMenu() {
         JMenuBar menubar = new JMenuBar();
         JMenu userMenu = new JMenu("User");
@@ -53,7 +66,11 @@ public class MainForm {
         userInfoItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new UserInfoForm().show();
+                if (userInfoForm != null) {
+                    userInfoForm.dispose();
+                }
+                userInfoForm = new UserInfoForm();
+                userInfoForm.show();
             }
         });
         userMenu.add(userInfoItem);
@@ -65,7 +82,11 @@ public class MainForm {
             userAdminItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    new UserAdminForm().show();
+                    if (userAdminForm != null) {
+                        userAdminForm.dispose();
+                    }
+                    userAdminForm = new UserAdminForm();
+                    userAdminForm.show();
                 }
             });
             userMenu.add(userAdminItem);
@@ -76,7 +97,7 @@ public class MainForm {
                 @Override
                 public void actionPerformed(ActionEvent e) {
 //                    new DishesForm();
-                    DishesForm.getInstance();
+                    DishesForm.show();
                 }
             });
             JMenu dishMenu = new JMenu("Dish");
@@ -90,6 +111,13 @@ public class MainForm {
         logoutMen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (userInfoForm != null) {
+                    userInfoForm.dispose();
+                }
+                if (userAdminForm != null) {
+                    userAdminForm.dispose();
+                }
+                DishesForm.dispose();
                 frame.dispose();
                 LoginForm.show();
             }
@@ -103,10 +131,125 @@ public class MainForm {
     public void show() {
         if (frame == null) {
             initFrame();
+//            setModel(new OrderImpl());
         }
         frame.setVisible(true);
     }
 
+    public void setModel(Order order) {
+        this.model = order;
+    }
+
     public static void main(String[] args) {
+    }
+
+    private void initList() {
+
+        List<Dish> dishes = DishManager.getInstance().getAvailableDishes();
+        DefaultListModel<MenuItem> listModel = new DefaultListModel<MenuItem>();
+
+        for (Dish dish: dishes) {
+            listModel.addElement(new MenuItemImpl(dish, 0));
+        }
+
+        list1 = new JList(listModel);
+        list1.setCellRenderer(new ListRenderer().getListCellRenderer());
+        list1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JList list = (JList)e.getSource();
+                int index = list.locationToIndex(e.getPoint());
+                if( index >= 0 && index < listModel.getSize()) {
+                    MenuItem value = listModel.getElementAt(index);
+//                    System.out.println("MouseEvent..clicks count = " + e.getClickCount() + " index = " + index + " value = " + value.getDish());
+                    if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
+                        //left click
+//                    System.out.println("left click");
+                        controller.inc(value);
+                    }
+                    if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
+                        //right click
+//                    System.out.println("right click");
+                        controller.dec(value);
+                    }
+                }
+                super.mouseClicked(e);
+            }
+        });
+    }
+
+    public void refreshList() {
+        List<Dish> dishes = DishManager.getInstance().getAvailableDishes();
+        DefaultListModel<MenuItem> listModel = (DefaultListModel<MenuItem>) list1.getModel();
+        listModel.removeAllElements();
+        for (Dish dish: dishes) {
+            listModel.addElement(new MenuItemImpl(dish, 0));
+        }
+    }
+
+    private void createUIComponents() {
+
+        //init mvc
+        this.model = new OrderImpl();
+        controller = new OrderController();
+        controller.setView(this);
+        controller.setModel(this.model);
+        model.addActionListener(this);
+
+        initList();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getID() == ActionEvent.ACTION_PERFORMED) {
+            if (e.getActionCommand().equals(OrderImpl.UPDATE_MENU_ITEM)) {
+                DefaultListModel<MenuItem> listModel = (DefaultListModel<MenuItem>) list1.getModel();
+                MenuItem newItem = (MenuItem) e.getSource();
+                int totalCost = 0;
+                for (int i = 0; i < listModel.getSize(); i++) {
+                    MenuItem originItem = listModel.getElementAt(i);
+                    if (originItem.getDish().getId().equals(newItem.getDish().getId())) {
+                        listModel.setElementAt(newItem, i);
+                    }
+                    totalCost += originItem.getDish().getCost() * originItem.getNumber();
+                }
+                cost = totalCost;
+            } else if (e.getActionCommand().equals(OrderImpl.ADD_MENU_ITEM)) {
+                DefaultListModel<MenuItem> listModel = (DefaultListModel<MenuItem>) list1.getModel();
+                MenuItem source = (MenuItem) e.getSource();
+                for (int i = 0; i < listModel.getSize(); i++) {
+                    MenuItem originItem = listModel.getElementAt(i);
+                    if (originItem.getDish().getId().equals(source.getDish().getId())) {
+                        listModel.setElementAt(source, i);
+                        break;
+                    }
+                }
+                cost += source.getDish().getCost();
+            } else if (e.getActionCommand().equals(OrderImpl.REMOVE_MENU_ITEM)) {
+                DefaultListModel<MenuItem> listModel = (DefaultListModel<MenuItem>) list1.getModel();
+                MenuItem source = (MenuItem) e.getSource();
+                for (int i = 0; i < listModel.getSize(); i++) {
+                    MenuItem originItem = listModel.getElementAt(i);
+                    if (originItem.getDish().getId().equals(source.getDish().getId())) {
+                        listModel.setElementAt(source, 0);
+                        break;
+                    }
+                }
+                cost -= source.getDish().getCost();
+            } else if (e.getActionCommand().equals(OrderImpl.CLEAR)) {
+                DefaultListModel<MenuItem> listModel = (DefaultListModel<MenuItem>) list1.getModel();
+                for (int i = 0; i < listModel.getSize(); i++) {
+                    MenuItem item = listModel.getElementAt(i);
+                    item.setNumber(0);
+                    listModel.setElementAt(item, i);
+                }
+                cost = 0;
+            } else if (e.getActionCommand().equals(OrderImpl.REFRESH)) {
+                refreshList();
+                cost = 0;
+            }
+            // update cost label
+            costLabel.setText(String.valueOf(cost));
+        }
     }
 }

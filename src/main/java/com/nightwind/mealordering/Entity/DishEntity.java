@@ -46,7 +46,7 @@ public class DishEntity {
     }
 
     @Basic
-    @Column(name = "status", nullable = true, insertable = true, updatable = true, length = 45)
+    @Column(name = "status", nullable = false, insertable = true, updatable = true, length = 45)
     public String getStatus() {
         return status;
     }

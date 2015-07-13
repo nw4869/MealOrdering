@@ -1,18 +1,14 @@
 package com.nightwind.mealordering.controller;
 
-import com.nightwind.mealordering.service.Dish;
-import com.nightwind.mealordering.service.DishManager;
+import com.nightwind.mealordering.model.Dish;
+import com.nightwind.mealordering.model.DishManager;
 import com.nightwind.mealordering.view.DishesForm;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by nightwind on 15/7/10.
