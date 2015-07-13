@@ -42,7 +42,6 @@ public class DefaultDish implements Dish {
         } finally {
             session.close();
         }
-        session.close();
         return entity;
     }
 

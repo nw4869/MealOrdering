@@ -9,6 +9,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Timestamp;
@@ -66,7 +68,7 @@ public class OrderImpl implements Order {
                 OrderEntity orderEntity = (OrderEntity) entity;
 
                 // get menus
-                Criteria cr = session.createCriteria(MenuItem.class);
+                Criteria cr = session.createCriteria(MenuEntity.class);
                 cr.add(Restrictions.eq("orderId", orderEntity.getId()));
 
                 List<MenuItem> menuItems = new ArrayList<>();
@@ -95,6 +97,15 @@ public class OrderImpl implements Order {
     @Override
     public int getId() {
         return id;
+    }
+
+    @Override
+    public double getTotalCost() {
+        double cost = 0;
+        for (MenuItem item : getMenuItems()) {
+            cost += item.getDish().getCost() * item.getNumber();
+        }
+        return cost;
     }
 
     @Override
@@ -144,8 +155,33 @@ public class OrderImpl implements Order {
             session.update(entity);
 
             tx.commit();
+            status = "cancel";
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
+            status = "normal";
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+
+    @Override
+    public void enable() {
+
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction tx = null;
+        try {
+            tx = session.beginTransaction();
+
+            OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
+            entity.setStatus("normal");
+            session.update(entity);
+
+            tx.commit();
+            status = "normal";
+        } catch (HibernateException e) {
+            if (tx != null) tx.rollback();
+            status = "cancel";
             e.printStackTrace();
         } finally {
             session.close();
@@ -220,6 +256,96 @@ public class OrderImpl implements Order {
     private void processEvent(ActionEvent e) {
         for(ActionListener listener: listeners) {
             listener.actionPerformed(e);
+        }
+    }
+
+    public TableModel getTableModel() {
+        return null;
+    }
+
+    public static class OrdersTableModel extends AbstractTableModel {
+
+        private List<Order> orders = new OrderImpl().getAllOrder();
+
+        private String[] COLUMN = {"id", "menuInfo", "totalCost", "time", "username", "status"};
+
+        @Override
+        public int getRowCount() {
+            return orders.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return COLUMN.length;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            Object obj = null;
+            Order order = orders.get(rowIndex);
+            switch (columnIndex) {
+                case 0:
+                    obj = order.getId();
+                    break;
+                case 1:
+                    StringBuilder menuInfo = new StringBuilder();
+                    for (MenuItem item: order.getMenuItems()) {
+                        Dish dish = item.getDish();
+                        menuInfo.append(dish.getName()).append("*").append(item.getNumber()).append(", ");
+                    }
+                    if (menuInfo.length() >= 2) {
+                        menuInfo.delete(menuInfo.length() - 2, menuInfo.length());
+                    }
+                    obj = menuInfo.toString();
+                    break;
+                case 2:
+                    obj = order.getTotalCost();
+                    break;
+                case 3:
+                    obj = order.getTime();
+                    break;
+                case 4:
+                    obj = order.getUser().getUsername();
+                    break;
+                case 5:
+                    obj = order.getStatus().equals("normal");
+                    break;
+            }
+            return obj;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return COLUMN[column];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return getValueAt(0, columnIndex).getClass();
+        }
+
+        public void refresh() {
+            orders = new OrderImpl().getAllOrder();
+//            fireTableRowsUpdated(0, orders.size());
+            fireTableRowsInserted(0, orders.size());
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == 5;
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            Order order = orders.get(rowIndex);
+            if (columnIndex == 5) {
+                if (aValue.equals(false)) {
+                    order.cancel();
+                } else {
+                    order.enable();
+                }
+                fireTableCellUpdated(rowIndex, columnIndex);
+            }
         }
     }
 }

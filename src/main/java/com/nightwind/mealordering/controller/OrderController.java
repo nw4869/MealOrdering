@@ -5,6 +5,8 @@ import com.nightwind.mealordering.model.Order;
 import com.nightwind.mealordering.model.UserManager;
 import com.nightwind.mealordering.view.MainForm;
 
+import javax.swing.*;
+
 /**
  * Created by nightwind on 15/7/12.
  */
@@ -33,8 +35,15 @@ public class OrderController {
         }
     }
 
-    public void commit() {
-        model.commit(UserManager.getInstance().getCurrentUser());
+    public boolean commit() {
+        if (model.getMenuItems().size() > 0) {
+            model.commit(UserManager.getInstance().getCurrentUser());
+            JOptionPane.showMessageDialog(null, "commit success");
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(null, "please select dish");
+            return false;
+        }
     }
 
     public void reset() {

@@ -30,7 +30,6 @@ public class MainForm implements ActionListener{
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.commit();
-                JOptionPane.showMessageDialog(null, "commit success");
             }
         });
         resetButton.addActionListener(new ActionListener() {
@@ -60,6 +59,19 @@ public class MainForm implements ActionListener{
 
     private void setupMenu() {
         JMenuBar menubar = new JMenuBar();
+
+        // order manage
+        JMenu orderMenu = new JMenu("Order");
+        JMenuItem orderManageItem = new JMenuItem("Orders Manage");
+        orderManageItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OrderManageForm.show();
+            }
+        });
+        orderMenu.add(orderManageItem);
+        menubar.add(orderMenu);
+
         JMenu userMenu = new JMenu("User");
         // user info item
         JMenuItem userInfoItem = new JMenuItem("User Info");
@@ -118,6 +130,7 @@ public class MainForm implements ActionListener{
                     userAdminForm.dispose();
                 }
                 DishesForm.dispose();
+                OrderManageForm.dispose();
                 frame.dispose();
                 LoginForm.show();
             }

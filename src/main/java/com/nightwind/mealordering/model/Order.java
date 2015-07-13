@@ -13,6 +13,8 @@ public interface Order {
 
     void cancel();
 
+    void enable();
+
     List<MenuItem> getMenuItems();
 
     void addMenuItem(MenuItem menuItem);
@@ -34,6 +36,8 @@ public interface Order {
     String getStatus();
 
     int getId();
+
+    double getTotalCost();
 
     void addActionListener(ActionListener listener);
 
