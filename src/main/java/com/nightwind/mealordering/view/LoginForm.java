@@ -67,7 +67,7 @@ public class LoginForm {
 
 
     public static void main(String[] args) {
-        frame = new JFrame("Login");
+        frame = new JFrame("登陆");
         frame.setContentPane(new LoginForm().panel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();

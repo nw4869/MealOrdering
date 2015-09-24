@@ -47,7 +47,7 @@ public class MainForm implements ActionListener{
     }
 
     private void initFrame() {
-        frame = new JFrame("MainForm");
+        frame = new JFrame("点餐系统主界面");
         frame.setContentPane(panel);
 
         setupMenu();
@@ -61,8 +61,8 @@ public class MainForm implements ActionListener{
         JMenuBar menubar = new JMenuBar();
 
         // order manage
-        JMenu orderMenu = new JMenu("Order");
-        JMenuItem orderManageItem = new JMenuItem("Orders Manage");
+        JMenu orderMenu = new JMenu("订单");
+        JMenuItem orderManageItem = new JMenuItem("订单管理");
         orderManageItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -72,9 +72,9 @@ public class MainForm implements ActionListener{
         orderMenu.add(orderManageItem);
         menubar.add(orderMenu);
 
-        JMenu userMenu = new JMenu("User");
+        JMenu userMenu = new JMenu("用户");
         // user info item
-        JMenuItem userInfoItem = new JMenuItem("User Info");
+        JMenuItem userInfoItem = new JMenuItem("用户信息");
         userInfoItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -90,7 +90,7 @@ public class MainForm implements ActionListener{
         // set up admin menus
         if (UserManager.getInstance().getCurrentUser().isAdmin()) {
             // user admin
-            JMenuItem userAdminItem = new JMenuItem("User Admin");
+            JMenuItem userAdminItem = new JMenuItem("用户管理");
             userAdminItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -104,7 +104,7 @@ public class MainForm implements ActionListener{
             userMenu.add(userAdminItem);
 
             // dishes admin
-            JMenuItem dishesMangeItem = new JMenuItem("Dish Manage");
+            JMenuItem dishesMangeItem = new JMenuItem("菜品管理");
             dishesMangeItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -112,13 +112,13 @@ public class MainForm implements ActionListener{
                     DishesForm.show();
                 }
             });
-            JMenu dishMenu = new JMenu("Dish");
+            JMenu dishMenu = new JMenu("菜品");
             dishMenu.add(dishesMangeItem);
             menubar.add(dishMenu);
         }
 
 
-        JMenuItem logoutMen = new JMenuItem("Logout");
+        JMenuItem logoutMen = new JMenuItem("登出");
         userMenu.add(logoutMen);
         logoutMen.addActionListener(new ActionListener() {
             @Override

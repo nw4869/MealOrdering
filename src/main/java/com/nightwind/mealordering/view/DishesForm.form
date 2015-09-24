@@ -34,7 +34,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="name"/>
+              <text value="菜名"/>
             </properties>
           </component>
           <component id="10fa5" class="javax.swing.JTextField" binding="nameField">
@@ -50,7 +50,7 @@
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="cost"/>
+              <text value="价格"/>
             </properties>
           </component>
           <component id="12c72" class="javax.swing.JTextField" binding="costField">
@@ -63,10 +63,10 @@
           </component>
           <component id="1c8cc" class="javax.swing.JButton" binding="insertButton" default-binding="true">
             <constraints>
-              <grid row="0" column="4" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="4" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Insert"/>
+              <text value="插入"/>
             </properties>
           </component>
           <component id="a74dc" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
@@ -74,7 +74,7 @@
               <grid row="0" column="5" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Delete"/>
+              <text value="删除"/>
             </properties>
           </component>
           <component id="b5103" class="javax.swing.JLabel">
@@ -82,7 +82,7 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="info"/>
+              <text value="信息"/>
             </properties>
           </component>
           <component id="653f9" class="javax.swing.JTextField" binding="infoField">

@@ -23,7 +23,7 @@ public class UserAdminForm {
 
     public void show() {
         if (frame == null) {
-            frame = new JFrame("UserAdmin");
+            frame = new JFrame("用户管理");
             frame.setContentPane(new UserAdminForm().panel);
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             frame.setLocationRelativeTo(null);

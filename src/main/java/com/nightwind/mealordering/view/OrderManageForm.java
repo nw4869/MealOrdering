@@ -37,7 +37,7 @@ public class OrderManageForm {
         if (frame != null) {
             frame.dispose();
         }
-        frame = new JFrame("OrderManageForm");
+        frame = new JFrame("订单管理");
         OrderManageForm view = new OrderManageForm();
         view.controller = new OrdersController();
         view.controller.setTableModel(view.ordersTableModel);

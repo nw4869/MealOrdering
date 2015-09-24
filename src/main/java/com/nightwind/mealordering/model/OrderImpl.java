@@ -269,6 +269,8 @@ public class OrderImpl implements Order {
 
         private String[] COLUMN = {"id", "menuInfo", "totalCost", "time", "username", "status"};
 
+        private String[] DISPLAY_NAME = {"编号", "菜单信息", "总价", "时间", "用户名", "可用"};
+
         @Override
         public int getRowCount() {
             return orders.size();
@@ -316,7 +318,7 @@ public class OrderImpl implements Order {
 
         @Override
         public String getColumnName(int column) {
-            return COLUMN[column];
+            return DISPLAY_NAME[column];
         }
 
         @Override

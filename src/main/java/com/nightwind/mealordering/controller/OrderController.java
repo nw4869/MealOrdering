@@ -38,10 +38,10 @@ public class OrderController {
     public boolean commit() {
         if (model.getMenuItems().size() > 0) {
             model.commit(UserManager.getInstance().getCurrentUser());
-            JOptionPane.showMessageDialog(null, "commit success");
+            JOptionPane.showMessageDialog(null, "提交成功");
             return true;
         } else {
-            JOptionPane.showMessageDialog(null, "please select dish");
+            JOptionPane.showMessageDialog(null, "请选择菜品");
             return false;
         }
     }

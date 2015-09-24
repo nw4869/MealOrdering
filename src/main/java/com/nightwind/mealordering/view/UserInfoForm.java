@@ -45,7 +45,7 @@ public class UserInfoForm {
                     getData(entity);
                     currentUser.updatePassword(entity.getPassword());
                 }
-                JOptionPane.showMessageDialog(null, "update success");
+                JOptionPane.showMessageDialog(null, "更新成功");
             }
         });
 //        queryButton.addActionListener(new ActionListener() {
@@ -57,7 +57,7 @@ public class UserInfoForm {
     }
 
     public void show() {
-        frame = new JFrame("User Info");
+        frame = new JFrame("用户信息");
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();

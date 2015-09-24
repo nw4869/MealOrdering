@@ -77,7 +77,7 @@ public class DishesForm implements Dish.Listener<Dish> {
             }
         });
 
-        frame = new JFrame("Dishes Mange");
+        frame = new JFrame("菜品管理");
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();
