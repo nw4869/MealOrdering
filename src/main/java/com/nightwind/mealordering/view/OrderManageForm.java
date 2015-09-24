@@ -3,7 +3,16 @@ package com.nightwind.mealordering.view;
 import com.nightwind.mealordering.controller.OrdersController;
 import com.nightwind.mealordering.model.OrderImpl;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -15,12 +24,46 @@ public class OrderManageForm {
     private JPanel panel;
     private JTable table1;
     private JButton refreshButton;
+    private JTextField filterField;
+    private JComboBox comboBox1;
+    private JComboBox comboBox2;
+    private JTextField filterField2;
+    private JButton ResetButton;
+    private JButton ResetButton2;
     private OrderImpl.OrdersTableModel ordersTableModel;
     private OrdersController controller;
+    TableRowSorter<OrderImpl.OrdersTableModel> sorter;
+
+    public OrderManageForm() {
+        comboBox1.addActionListener(e -> {
+            newFilter();
+        });
+        comboBox2.addActionListener(e -> {
+            newFilter();
+        });
+        ResetButton.addActionListener(e -> {
+            filterField.setText("");
+        });
+        ResetButton2.addActionListener(e -> {
+            filterField2.setText("");
+        });
+    }
+
 
     private void createUIComponents() {
         ordersTableModel = new OrderImpl.OrdersTableModel();
         table1 = new JTable(ordersTableModel);
+        table1.setDefaultRenderer(OrderImpl.Status.class, new StatusRender());
+        table1.setDefaultEditor(OrderImpl.Status.class, new StatusEditor(OrderImpl.Status.LIST));
+        table1.setAutoCreateRowSorter(true);
+        sorter = new TableRowSorter<>(ordersTableModel);
+        table1.setRowSorter(sorter);
+
+        filterField = new JTextField();
+        filterField.getDocument().addDocumentListener( new FilterDocumentListener());
+
+        filterField2 = new JTextField();
+        filterField2.getDocument().addDocumentListener( new FilterDocumentListener());
 
         refreshButton = new JButton();
         refreshButton.addActionListener(new ActionListener() {
@@ -31,6 +74,90 @@ public class OrderManageForm {
                 }
             }
         });
+    }
+
+    private class FilterDocumentListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            newFilter();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            newFilter();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            newFilter();
+        }
+
+    }
+
+
+    private void newFilter() {
+        int filterIndex1 = comboBox1.getSelectedIndex();
+        int filterIndex2 = comboBox2.getSelectedIndex();
+        List<RowFilter<OrderImpl.OrdersTableModel, Object>> filters = new ArrayList<>();
+        RowFilter<OrderImpl.OrdersTableModel, Object> rf = null;
+        //If current expression doesn't parse, don't update.
+        try {
+            filters.add(RowFilter.regexFilter(filterField.getText(), filterIndex1));
+            filters.add(RowFilter.regexFilter(filterField2.getText(), filterIndex2));
+            rf = RowFilter.andFilter(filters);
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        sorter.setRowFilter(rf);
+    }
+
+    private class StatusRender extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (value instanceof OrderImpl.Status) {
+                setText(((OrderImpl.Status) value).value);
+            }
+
+            return this;
+        }
+    }
+
+    public class StatusEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+
+        private final List<OrderImpl.Status> list;
+        private OrderImpl.Status value;
+
+        public StatusEditor(List<OrderImpl.Status> list) {
+            this.list = list;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return this.value;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            if (value instanceof OrderImpl.Status) {
+                this.value = (OrderImpl.Status) value;
+            }
+
+            JComboBox<OrderImpl.Status> comboBox = new JComboBox<>();
+
+            for (OrderImpl.Status status: list) {
+                comboBox.addItem(status);
+            }
+
+            comboBox.setSelectedItem(value);
+            comboBox.addActionListener(this);
+
+            return comboBox;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            this.value = (OrderImpl.Status) ((JComboBox< OrderImpl.Status >)e.getSource()).getSelectedItem();
+        }
     }
 
     public static void show() {

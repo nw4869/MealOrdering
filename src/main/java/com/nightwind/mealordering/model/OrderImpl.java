@@ -253,6 +253,31 @@ public class OrderImpl implements Order {
         listeners.remove(listener);
     }
 
+    @Override
+    public void completed() {
+
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        String org = null;
+        Transaction tx = null;
+        try {
+            tx = session.beginTransaction();
+
+            OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
+            org = entity.getStatus();
+            entity.setStatus("completed");
+            session.update(entity);
+
+            tx.commit();
+            status = "completed";
+        } catch (HibernateException e) {
+            if (tx != null) tx.rollback();
+            status = org;
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+
     private void processEvent(ActionEvent e) {
         for(ActionListener listener: listeners) {
             listener.actionPerformed(e);
@@ -263,13 +288,43 @@ public class OrderImpl implements Order {
         return null;
     }
 
+    public static class Status {
+        public Status() {}
+
+        public Status(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Status && value.equals(((Status) obj).value);
+        }
+
+        public String value;
+
+        public final static List<Status> LIST;
+
+        static {
+            List<Status> list = new ArrayList<>();
+            list.add(new Status("normal"));
+            list.add(new Status("cancel"));
+            list.add(new Status("completed"));
+            LIST = new ArrayList<>(list);
+        }
+    }
+
     public static class OrdersTableModel extends AbstractTableModel {
 
         private List<Order> orders = new OrderImpl().getAllOrder();
 
         private String[] COLUMN = {"id", "menuInfo", "totalCost", "time", "username", "status"};
 
-        private String[] DISPLAY_NAME = {"编号", "菜单信息", "总价", "时间", "用户名", "可用"};
+        private String[] DISPLAY_NAME = {"编号", "菜单信息", "总价", "时间", "用户名", "状态"};
 
         @Override
         public int getRowCount() {
@@ -310,7 +365,8 @@ public class OrderImpl implements Order {
                     obj = order.getUser().getUsername();
                     break;
                 case 5:
-                    obj = order.getStatus().equals("normal");
+//                    obj = order.getStatus().equals("normal");
+                    obj = new Status(order.getStatus());
                     break;
             }
             return obj;
@@ -340,11 +396,13 @@ public class OrderImpl implements Order {
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             Order order = orders.get(rowIndex);
-            if (columnIndex == 5) {
-                if (aValue.equals(false)) {
+            if (aValue instanceof Status) {
+                if (aValue.toString().equals("cancel")) {
                     order.cancel();
-                } else {
+                } else if (aValue.toString().equals("enable")){
                     order.enable();
+                } else {
+                    order.completed();
                 }
                 fireTableCellUpdated(rowIndex, columnIndex);
             }

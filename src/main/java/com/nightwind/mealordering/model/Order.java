@@ -42,4 +42,6 @@ public interface Order {
     void addActionListener(ActionListener listener);
 
     void removeActionListener(ActionListener listener);
+
+    void completed();
 }
