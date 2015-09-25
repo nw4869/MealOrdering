@@ -18,6 +18,8 @@ public class UserImpl implements User {
 
     public static final int ADMIN = 1;
 
+    public static final int CHEF = 2;
+
     private UserEntity entity;
 
     public UserImpl(String username) {
@@ -54,6 +56,9 @@ public class UserImpl implements User {
         if (verifyPassword(password)) {
 
             entity = getEntity(entity.getUsername());
+            if (!isEnable()) {
+                return false;
+            }
 
             UserManager.getInstance().setCurrentUser(this);
             return true;
@@ -146,5 +151,9 @@ public class UserImpl implements User {
 
     public boolean isAdmin() {
         return entity.getAdmin() == ADMIN;
+    }
+
+    public boolean isChef() {
+        return entity.getAdmin() == CHEF;
     }
 }

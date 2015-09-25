@@ -66,7 +66,7 @@ public class MainForm implements ActionListener{
         orderManageItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                OrderManageForm.show();
+                OrderManageForm.show(true);
             }
         });
         orderMenu.add(orderManageItem);

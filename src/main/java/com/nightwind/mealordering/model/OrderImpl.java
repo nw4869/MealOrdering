@@ -3,10 +3,7 @@ package com.nightwind.mealordering.model;
 import com.nightwind.mealordering.Entity.MenuEntity;
 import com.nightwind.mealordering.Entity.OrderEntity;
 import com.nightwind.mealordering.utils.HibernateUtil;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 
 import javax.swing.table.AbstractTableModel;
@@ -55,7 +52,7 @@ public class OrderImpl implements Order {
     }
 
     @Override
-    public List<Order> getAllOrder() {
+    public List<Order> getAllOrder(boolean justNormal) {
 
         List<Order> orders = new ArrayList<>();
 
@@ -64,7 +61,15 @@ public class OrderImpl implements Order {
         try {
             tx = session.beginTransaction();
 
-            for (Object entity: session.createQuery("from OrderEntity").list()) {
+            Query query;
+            if (justNormal) {
+                query = session.createQuery("from OrderEntity where status = :status");
+                query.setString("status", "normal");
+            } else {
+                query = session.createQuery("from OrderEntity");
+            }
+
+            for (Object entity: query.list()) {
                 OrderEntity orderEntity = (OrderEntity) entity;
 
                 // get menus
@@ -320,11 +325,15 @@ public class OrderImpl implements Order {
 
     public static class OrdersTableModel extends AbstractTableModel {
 
-        private List<Order> orders = new OrderImpl().getAllOrder();
+        protected List<Order> orders = loadOrderList();
 
-        private String[] COLUMN = {"id", "menuInfo", "totalCost", "time", "username", "status"};
+        protected String[] COLUMN = {"id", "menuInfo", "totalCost", "time", "username", "status"};
 
-        private String[] DISPLAY_NAME = {"编号", "菜单信息", "总价", "时间", "用户名", "状态"};
+        protected String[] DISPLAY_NAME = {"编号", "菜单信息", "总价", "时间", "用户名", "状态"};
+
+        protected List<Order> loadOrderList() {
+            return new OrderImpl().getAllOrder(false);
+        }
 
         @Override
         public int getRowCount() {
@@ -383,9 +392,9 @@ public class OrderImpl implements Order {
         }
 
         public void refresh() {
-            orders = new OrderImpl().getAllOrder();
+            orders = loadOrderList();
 //            fireTableRowsUpdated(0, orders.size());
-            fireTableRowsInserted(0, orders.size());
+            fireTableRowsInserted(0, orders.size()-1);
         }
 
         @Override
@@ -399,13 +408,49 @@ public class OrderImpl implements Order {
             if (aValue instanceof Status) {
                 if (aValue.toString().equals("cancel")) {
                     order.cancel();
-                } else if (aValue.toString().equals("enable")){
+                } else if (aValue.toString().equals("normal")){
                     order.enable();
                 } else {
                     order.completed();
                 }
                 fireTableCellUpdated(rowIndex, columnIndex);
             }
+        }
+    }
+
+    public static class ChefOrdersTableModel extends OrdersTableModel {
+
+        @Override
+        protected List<Order> loadOrderList() {
+            return new OrderImpl().getAllOrder(true);
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (columnIndex == 5) {
+                return orders.get(rowIndex).getStatus().equals("completed");
+            }
+            return super.getValueAt(rowIndex, columnIndex);
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 5) {
+                return Boolean.class;
+            }
+            return super.getColumnClass(columnIndex);
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            if (columnIndex == 5) {
+                if (aValue.equals(false)) {
+                    orders.get(rowIndex).enable();
+                } else {
+                    orders.get(rowIndex).completed();
+                }
+            }
+            super.setValueAt(aValue, rowIndex, columnIndex);
         }
     }
 }

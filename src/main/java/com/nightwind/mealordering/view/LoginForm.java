@@ -48,11 +48,18 @@ public class LoginForm {
         try {
             boolean ok = user.login(String.valueOf(passwordField.getPassword()));
             if (ok) {
+
+                if (user.isChef()) {
+                    frame.setVisible(false);
+                    OrderManageForm.show(false);
+                } else {
+
 //            JOptionPane.showMessageDialog(null, "Login success", "Login success", JOptionPane.INFORMATION_MESSAGE);
 //            new UserInfoForm().show();
-                new MainForm().show();
+                    new MainForm().show();
 
-                frame.setVisible(false);
+                    frame.setVisible(false);
+                }
 
             } else {
                 JOptionPane.showMessageDialog(null, "Login failed", "Login failed", JOptionPane.ERROR_MESSAGE);

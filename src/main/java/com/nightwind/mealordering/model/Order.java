@@ -31,7 +31,7 @@ public interface Order {
 
     Timestamp getTime();
 
-    List<Order> getAllOrder();
+    List<Order> getAllOrder(boolean justNormal);
 
     String getStatus();
 

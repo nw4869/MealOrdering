@@ -1,20 +1,21 @@
 package com.nightwind.mealordering.view;
 
+import com.nightwind.mealordering.controller.OrderController;
 import com.nightwind.mealordering.controller.OrdersController;
 import com.nightwind.mealordering.model.OrderImpl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.Timer;
 
 /**
  * Created by nightwind on 15/7/13.
@@ -33,6 +34,8 @@ public class OrderManageForm {
     private OrderImpl.OrdersTableModel ordersTableModel;
     private OrdersController controller;
     TableRowSorter<OrderImpl.OrdersTableModel> sorter;
+    private static boolean sAdmin = false;
+    private java.util.Timer timer;
 
     public OrderManageForm() {
         comboBox1.addActionListener(e -> {
@@ -51,7 +54,11 @@ public class OrderManageForm {
 
 
     private void createUIComponents() {
-        ordersTableModel = new OrderImpl.OrdersTableModel();
+        if (OrderManageForm.sAdmin) {
+            ordersTableModel = new OrderImpl.OrdersTableModel();
+        } else {
+            ordersTableModel = new OrderImpl.ChefOrdersTableModel();
+        }
         table1 = new JTable(ordersTableModel);
         table1.setDefaultRenderer(OrderImpl.Status.class, new StatusRender());
         table1.setDefaultEditor(OrderImpl.Status.class, new StatusEditor(OrderImpl.Status.LIST));
@@ -63,7 +70,7 @@ public class OrderManageForm {
         filterField.getDocument().addDocumentListener( new FilterDocumentListener());
 
         filterField2 = new JTextField();
-        filterField2.getDocument().addDocumentListener( new FilterDocumentListener());
+        filterField2.getDocument().addDocumentListener(new FilterDocumentListener());
 
         refreshButton = new JButton();
         refreshButton.addActionListener(new ActionListener() {
@@ -160,7 +167,8 @@ public class OrderManageForm {
         }
     }
 
-    public static void show() {
+    public static void show(boolean admin) {
+        OrderManageForm.sAdmin = admin;
         if (frame != null) {
             frame.dispose();
         }
@@ -174,13 +182,31 @@ public class OrderManageForm {
         frame.setLocationRelativeTo(null);
         frame.pack();
         frame.setVisible(true);
+
+        if (!admin) {
+            view.refreshPeriod(1000);
+        }
+    }
+
+    public void refreshPeriod(int periodMs) {
+        if (this.timer == null) {
+            this.timer = new Timer();
+        }
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                OrderManageForm.this.controller.refresh();
+            }
+        }, periodMs, periodMs);
     }
 
     public static void dispose() {
-        frame.dispose();
+        if (frame != null) {
+            frame.dispose();
+        }
     }
 
     public static void main(String[] args) {
-        show();
+        show(true);
     }
 }

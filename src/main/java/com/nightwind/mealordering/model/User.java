@@ -22,4 +22,6 @@ public interface User {
     boolean isEnable();
 
     boolean isAdmin();
+
+    boolean isChef();
 }

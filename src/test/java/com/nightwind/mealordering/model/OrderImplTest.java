@@ -17,7 +17,7 @@ public class OrderImplTest {
 
     @Test
     public void testGetAllOrder() throws Exception {
-        List<Order> orders = new OrderImpl().getAllOrder();
+        List<Order> orders = new OrderImpl().getAllOrder(true);
         for (Order order: orders) {
             for (MenuItem item: order.getMenuItems()) {
                 System.out.println(item.getDish().getName() + item.getNumber());
