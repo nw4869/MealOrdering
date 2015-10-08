@@ -12,4 +12,8 @@ public interface MenuItem {
     Integer getNumber();
 
     void setNumber(Integer number);
+
+    Integer getStatus();
+
+    void setStatus(Integer status);
 }

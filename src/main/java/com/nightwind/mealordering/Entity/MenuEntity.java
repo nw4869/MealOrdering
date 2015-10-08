@@ -12,6 +12,7 @@ public class MenuEntity {
     private int dishId;
     private int dishNumber;
     private int orderId;
+    private int status;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +54,17 @@ public class MenuEntity {
     public void setOrderId(int orderId) {
         this.orderId = orderId;
     }
+
+    @Basic
+    @Column(name = "status", nullable = false, insertable = true, updatable = true)
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
 
     @Override
     public boolean equals(Object o) {

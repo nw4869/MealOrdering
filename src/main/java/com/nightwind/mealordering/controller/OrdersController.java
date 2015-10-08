@@ -1,5 +1,6 @@
 package com.nightwind.mealordering.controller;
 
+import com.nightwind.mealordering.model.Order;
 import com.nightwind.mealordering.model.OrderImpl;
 import com.nightwind.mealordering.view.OrderManageForm;
 
@@ -21,6 +22,11 @@ public class OrdersController {
 
     public void refresh() {
         tableModel.refresh();
+    }
+
+    public void rowSelected(int rowId) {
+        Order order = tableModel.getOrder(rowId);
+        view.showOrderMenuItemDetail(order);
     }
 
 //    public void cancel() {

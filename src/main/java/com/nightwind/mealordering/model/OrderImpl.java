@@ -27,6 +27,9 @@ public class OrderImpl implements Order {
     public static final java.lang.String UPDATE_MENU_ITEM = "update_menu_item";
     public static final java.lang.String CLEAR = "clear";
     public static final String REFRESH = "refresh";
+    public static final String STATUS_CANCEL = "cancel";
+    public static final String STATUS_NORMAL = "normal";
+    public static final String STATUS_COMPLETED = "completed";
 
     private Timestamp time;
 
@@ -64,7 +67,7 @@ public class OrderImpl implements Order {
             Query query;
             if (justNormal) {
                 query = session.createQuery("from OrderEntity where status = :status");
-                query.setString("status", "normal");
+                query.setString("status", STATUS_NORMAL);
             } else {
                 query = session.createQuery("from OrderEntity");
             }
@@ -124,7 +127,7 @@ public class OrderImpl implements Order {
             OrderEntity orderEntity = new OrderEntity();
             orderEntity.setUsername(user.getUsername());
             orderEntity.setTime(new Timestamp(System.currentTimeMillis()));
-            orderEntity.setStatus("normal");
+            orderEntity.setStatus(STATUS_NORMAL);
             session.save(orderEntity);
 
             // save menuItem
@@ -156,14 +159,14 @@ public class OrderImpl implements Order {
             tx = session.beginTransaction();
 
             OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
-            entity.setStatus("cancel");
+            entity.setStatus(STATUS_CANCEL);
             session.update(entity);
 
             tx.commit();
-            status = "cancel";
+            status = STATUS_CANCEL;
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
-            status = "normal";
+            status = STATUS_NORMAL;
             e.printStackTrace();
         } finally {
             session.close();
@@ -179,14 +182,14 @@ public class OrderImpl implements Order {
             tx = session.beginTransaction();
 
             OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
-            entity.setStatus("normal");
+            entity.setStatus(STATUS_NORMAL);
             session.update(entity);
 
             tx.commit();
-            status = "normal";
+            status = STATUS_NORMAL;
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
-            status = "cancel";
+            status = STATUS_CANCEL;
             e.printStackTrace();
         } finally {
             session.close();
@@ -269,11 +272,11 @@ public class OrderImpl implements Order {
 
             OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
             org = entity.getStatus();
-            entity.setStatus("completed");
+            entity.setStatus(STATUS_COMPLETED);
             session.update(entity);
 
             tx.commit();
-            status = "completed";
+            status = STATUS_COMPLETED;
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
             status = org;
@@ -316,10 +319,75 @@ public class OrderImpl implements Order {
 
         static {
             List<Status> list = new ArrayList<>();
-            list.add(new Status("normal"));
-            list.add(new Status("cancel"));
-            list.add(new Status("completed"));
+            list.add(new Status(STATUS_NORMAL));
+            list.add(new Status(STATUS_CANCEL));
+            list.add(new Status(STATUS_COMPLETED));
             LIST = new ArrayList<>(list);
+        }
+    }
+
+    public static class OrderDetailModel extends AbstractTableModel {
+
+        protected Order order;
+
+        protected final String[] DISPLAY_NAME = {"菜品", "数量", "完成", "可用"};
+
+        public OrderDetailModel(Order order) {
+            this.order = order;
+        }
+
+        @Override
+        public int getRowCount() {
+            if (order != null && order.getMenuItems() != null) {
+                return order.getMenuItems().size();
+            }
+            return 0;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return DISPLAY_NAME.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return DISPLAY_NAME[column];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return getValueAt(0, columnIndex).getClass();
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            MenuItem menuItem = order.getMenuItems().get(rowIndex);
+            Object object = null;
+            switch (columnIndex) {
+                case 0:
+                    object = menuItem.getDish().getName();
+                    break;
+                case 1:
+                    object = menuItem.getNumber();
+                    break;
+                case 2:
+                    object = menuItem.getStatus() == 1;
+                    break;
+                case 3:
+                    object = order.getStatus().equals(STATUS_CANCEL) || menuItem.getStatus() != 2;
+                    break;
+            }
+            return object;
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return (columnIndex == 2 && (Boolean)getValueAt(0, 3)) || columnIndex == 3;
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            super.setValueAt(aValue, rowIndex, columnIndex);
         }
     }
 
@@ -333,6 +401,10 @@ public class OrderImpl implements Order {
 
         protected List<Order> loadOrderList() {
             return new OrderImpl().getAllOrder(false);
+        }
+
+        public Order getOrder(int index) {
+            return orders.get(index);
         }
 
         @Override
@@ -368,13 +440,14 @@ public class OrderImpl implements Order {
                     obj = order.getTotalCost();
                     break;
                 case 3:
-                    obj = order.getTime();
+                    // [0, 19): return date and time exclude millisecond
+                    obj = order.getTime().toString().substring(0, 19);
                     break;
                 case 4:
                     obj = order.getUser().getUsername();
                     break;
                 case 5:
-//                    obj = order.getStatus().equals("normal");
+//                    obj = order.getStatus().equals(STATUS_NORMAL);
                     obj = new Status(order.getStatus());
                     break;
             }
@@ -406,9 +479,9 @@ public class OrderImpl implements Order {
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             Order order = orders.get(rowIndex);
             if (aValue instanceof Status) {
-                if (aValue.toString().equals("cancel")) {
+                if (aValue.toString().equals(STATUS_CANCEL)) {
                     order.cancel();
-                } else if (aValue.toString().equals("normal")){
+                } else if (aValue.toString().equals(STATUS_NORMAL)){
                     order.enable();
                 } else {
                     order.completed();
@@ -428,7 +501,7 @@ public class OrderImpl implements Order {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 5) {
-                return orders.get(rowIndex).getStatus().equals("completed");
+                return orders.get(rowIndex).getStatus().equals(STATUS_COMPLETED);
             }
             return super.getValueAt(rowIndex, columnIndex);
         }

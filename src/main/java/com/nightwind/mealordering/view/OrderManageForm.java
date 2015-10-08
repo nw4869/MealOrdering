@@ -1,9 +1,11 @@
 package com.nightwind.mealordering.view;
 
-import com.nightwind.mealordering.controller.OrderController;
 import com.nightwind.mealordering.controller.OrdersController;
+import com.nightwind.mealordering.model.Order;
 import com.nightwind.mealordering.model.OrderImpl;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -31,6 +33,7 @@ public class OrderManageForm {
     private JTextField filterField2;
     private JButton ResetButton;
     private JButton ResetButton2;
+    private JTable detailTable;
     private OrderImpl.OrdersTableModel ordersTableModel;
     private OrdersController controller;
     TableRowSorter<OrderImpl.OrdersTableModel> sorter;
@@ -52,6 +55,10 @@ public class OrderManageForm {
         });
     }
 
+    public void showOrderMenuItemDetail(Order order) {
+        OrderImpl.OrderDetailModel orderModel = new OrderImpl.OrderDetailModel(order);
+        detailTable.setModel(orderModel);
+    }
 
     private void createUIComponents() {
         if (OrderManageForm.sAdmin) {
@@ -65,6 +72,10 @@ public class OrderManageForm {
         table1.setAutoCreateRowSorter(true);
         sorter = new TableRowSorter<>(ordersTableModel);
         table1.setRowSorter(sorter);
+        table1.getSelectionModel().addListSelectionListener(e -> {
+            // when selected show the menu items
+            controller.rowSelected(table1.getSelectedRow());
+        });
 
         filterField = new JTextField();
         filterField.getDocument().addDocumentListener( new FilterDocumentListener());
@@ -176,6 +187,7 @@ public class OrderManageForm {
         OrderManageForm view = new OrderManageForm();
         view.controller = new OrdersController();
         view.controller.setTableModel(view.ordersTableModel);
+        view.controller.setView(view);
 
         frame.setContentPane(view.panel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
