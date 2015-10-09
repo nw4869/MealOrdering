@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -76,6 +77,19 @@ public class OrderManageForm {
             // when selected show the menu items
             controller.rowSelected(table1.getSelectedRow());
         });
+
+        detailTable = new JTable() {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                //TODO gray background
+//                boolean ok = (Boolean)getValueAt(row, 3);
+//                if (!ok) {
+//                    c.setBackground(Color.LIGHT_GRAY);
+//                }
+                return c;
+            }
+        };
 
         filterField = new JTextField();
         filterField.getDocument().addDocumentListener( new FilterDocumentListener());

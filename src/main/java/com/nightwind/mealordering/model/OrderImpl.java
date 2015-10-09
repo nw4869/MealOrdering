@@ -374,7 +374,7 @@ public class OrderImpl implements Order {
                     object = menuItem.getStatus() == 1;
                     break;
                 case 3:
-                    object = order.getStatus().equals(STATUS_CANCEL) || menuItem.getStatus() != 2;
+                    object = !order.getStatus().equals(STATUS_CANCEL) && menuItem.getStatus() != 2;
                     break;
             }
             return object;
@@ -382,6 +382,10 @@ public class OrderImpl implements Order {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
+            if (order.getStatus().equals(STATUS_CANCEL)) {
+                // order canceled
+                return false;
+            }
             return (columnIndex == 2 && (Boolean)getValueAt(0, 3)) || columnIndex == 3;
         }
 
