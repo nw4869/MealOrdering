@@ -4,8 +4,6 @@ import com.nightwind.mealordering.controller.OrdersController;
 import com.nightwind.mealordering.model.Order;
 import com.nightwind.mealordering.model.OrderImpl;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -23,7 +21,7 @@ import java.util.Timer;
 /**
  * Created by nightwind on 15/7/13.
  */
-public class OrderManageForm {
+public class OrderManageForm implements ActionListener{
     private static JFrame frame;
     private JPanel panel;
     private JTable table1;
@@ -39,32 +37,30 @@ public class OrderManageForm {
     private OrderImpl.OrdersTableModel ordersTableModel;
     private OrdersController controller;
     TableRowSorter<OrderImpl.OrdersTableModel> sorter;
-    private static boolean sAdmin = false;
+    private boolean admin = false;
     private java.util.Timer timer;
     private OrderImpl.OverviewTableModel overviewTableModel;
 
     public OrderManageForm() {
-        comboBox1.addActionListener(e -> {
-            newFilter();
-        });
-        comboBox2.addActionListener(e -> {
-            newFilter();
-        });
-        ResetButton.addActionListener(e -> {
-            filterField.setText("");
-        });
-        ResetButton2.addActionListener(e -> {
-            filterField2.setText("");
-        });
+        initListener();
+    }
+
+    public OrderManageForm(boolean admin) {
+        this.admin = admin;
+
+        initListener();
     }
 
     public void showOrderMenuItemDetail(Order order) {
         OrderImpl.OrderDetailModel orderModel = new OrderImpl.OrderDetailModel(order);
+        order.removeActionListener(this);
+        order.addActionListener(this);
         detailTable.setModel(orderModel);
     }
 
     private void createUIComponents() {
-        if (OrderManageForm.sAdmin) {
+
+        if (this.admin) {
             ordersTableModel = new OrderImpl.OrdersTableModel();
         } else {
             ordersTableModel = new OrderImpl.ChefOrdersTableModel();
@@ -75,24 +71,31 @@ public class OrderManageForm {
         table1.setAutoCreateRowSorter(true);
         sorter = new TableRowSorter<>(ordersTableModel);
         List <RowSorter.SortKey> sortKey = new ArrayList<>();
-        sortKey.add(new RowSorter.SortKey(0, SortOrder.DESCENDING));
+        // sort key default: time desc
+        sortKey.add(new RowSorter.SortKey(3, SortOrder.DESCENDING));
         sorter.setSortKeys(sortKey);
         table1.setRowSorter(sorter);
         table1.getSelectionModel().addListSelectionListener(e -> {
             // when selected show the menu items
             if (e.getValueIsAdjusting())
                 return;
-            controller.rowSelected(table1.getSelectedRow());
+            int row = table1.getSelectedRow();
+            if (0 <= row && row < ordersTableModel.getRowCount()) {
+                controller.rowSelected(row);
+            }
         });
 
-        overviewTableModel = new OrderImpl.OverviewTableModel(ordersTableModel.getOrders());
+        final boolean forAllOrders = this.admin;
+        overviewTableModel = new OrderImpl.OverviewTableModel(ordersTableModel.getOrders(), forAllOrders);
         overviewTable = new JTable(overviewTableModel);
         overviewTable.setRowSorter(new TableRowSorter<>(overviewTableModel));
         overviewTable.getSelectionModel().addListSelectionListener( e -> {
             int row = overviewTable.getSelectedRow();
-            String dish = (String) overviewTableModel.getValueAt(row, 0);
-            comboBox2.setSelectedIndex(1);
-            filterField2.setText(dish);
+            if (0 <= row && row < overviewTableModel.getRowCount()) {
+                String dish = (String) overviewTableModel.getValueAt(row, 0);
+                comboBox2.setSelectedIndex(1);
+                filterField2.setText(dish);
+            }
         });
 
         detailTable = new JTable() {
@@ -123,6 +126,34 @@ public class OrderManageForm {
                 }
             }
         });
+    }
+
+    private void initListener() {
+        comboBox1.addActionListener(e -> {
+            newFilter();
+        });
+        comboBox2.addActionListener(e -> {
+            newFilter();
+        });
+        ResetButton.addActionListener(e -> {
+            filterField.setText("");
+        });
+        ResetButton2.addActionListener(e -> {
+            filterField2.setText("");
+        });
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getID() == ActionEvent.ACTION_PERFORMED) {
+            String cmd = e.getActionCommand();
+            if (cmd.equals(OrderImpl.COMMIT)) {
+                controller.refresh();
+            } else if (cmd.equals(OrderImpl.COMPLETED)) {
+                controller.refresh();
+                ((OrderImpl.OrderDetailModel) detailTable.getModel()).fireAllUpdate();
+            }
+        }
     }
 
     private class FilterDocumentListener implements DocumentListener {
@@ -209,13 +240,13 @@ public class OrderManageForm {
         }
     }
 
-    public static void show(boolean admin) {
-        OrderManageForm.sAdmin = admin;
+    public void show() {
         if (frame != null) {
             frame.dispose();
         }
         frame = new JFrame("订单管理");
-        OrderManageForm view = new OrderManageForm();
+//        OrderManageForm view = new OrderManageForm();
+        OrderManageForm view = this;
         view.controller = new OrdersController();
         view.controller.setTableModel(view.ordersTableModel);
         view.controller.setView(view);
@@ -226,9 +257,10 @@ public class OrderManageForm {
         frame.pack();
         frame.setVisible(true);
 
-        if (!admin) {
-            view.refreshPeriod(1000);
-        }
+        // auto refresh
+//        if (!admin) {
+//            view.refreshPeriod(30000);
+//        }
     }
 
     public void refreshPeriod(int periodMs) {
@@ -250,6 +282,6 @@ public class OrderManageForm {
     }
 
     public static void main(String[] args) {
-        show(true);
+//        show(true);
     }
 }

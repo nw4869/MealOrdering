@@ -21,10 +21,12 @@ public class OrderImpl implements Order {
     public static final java.lang.String ADD_MENU_ITEM = "add_menu_item";
     public static final String REMOVE_MENU_ITEM = "remove_menu_item";
     public static final String COMMIT = "commit";
-    public static final String CANEL = "commit";
+    public static final String CANCEL = "cancel";
+    public static final String COMPLETED = "completed";
     public static final java.lang.String UPDATE_MENU_ITEM = "update_menu_item";
     public static final java.lang.String CLEAR = "clear";
     public static final String REFRESH = "refresh";
+
     public static final String STATUS_CANCEL = "cancel";
     public static final String STATUS_NORMAL = "normal";
     public static final String STATUS_COMPLETED = "completed";
@@ -141,6 +143,7 @@ public class OrderImpl implements Order {
             }
 
             tx.commit();
+            processEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, COMMIT));
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
             e.printStackTrace();
@@ -268,6 +271,17 @@ public class OrderImpl implements Order {
         try {
             tx = session.beginTransaction();
 
+            // completed menu items
+            Query query = session.createQuery("update MenuEntity set status = 1 where status = 0 and orderId = :orderId");
+            query.setInteger("orderId", id);
+            query.executeUpdate();
+
+            for (MenuItem menuItem: menuItems) {
+                if (menuItem.getStatus() == 0) {
+                    menuItem.setStatus(1);
+                }
+            }
+
             OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
             org = entity.getStatus();
             entity.setStatus(STATUS_COMPLETED);
@@ -275,6 +289,7 @@ public class OrderImpl implements Order {
 
             tx.commit();
             status = STATUS_COMPLETED;
+            processEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, COMPLETED));
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
             status = org;
@@ -333,21 +348,17 @@ public class OrderImpl implements Order {
 
         protected final String[] DISPLAY_NAME = {"菜品", "数量"};
 
-        public OverviewTableModel() {
-            List<Order> orders = new OrderImpl().getAllOrder(false);
-            initList(orders);
-        }
 
-        public OverviewTableModel(List<Order> orders) {
+        public OverviewTableModel(List<Order> orders, boolean forAllOrders) {
             // init list
-            initList(orders);
+            initList(orders, forAllOrders);
         }
 
-        private void initList(List<Order> orders) {
+        private void initList(List<Order> orders, boolean forAllOrders) {
             Map<String, Integer> dishCountMap = new HashMap<>();
             for (Order order : orders) {
                 // check normal order
-                if (order.getStatus().equals("normal")) {
+                if (forAllOrders || order.getStatus().equals(STATUS_NORMAL)) {
                     // count all menu item
                     for (MenuItem menuItem : order.getMenuItems()) {
                         String name = menuItem.getDish().getName();
@@ -393,6 +404,11 @@ public class OrderImpl implements Order {
         @Override
         public String getColumnName(int column) {
             return DISPLAY_NAME[column];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return getValueAt(0, columnIndex).getClass();
         }
     }
 
@@ -461,7 +477,37 @@ public class OrderImpl implements Order {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            super.setValueAt(aValue, rowIndex, columnIndex);
+            MenuItem menuItem = order.getMenuItems().get(rowIndex);
+            if (columnIndex == 2) {
+                // to be completed
+                if ((boolean)aValue) {
+                    menuItem.setStatus(MenuItemImpl.STATUS_COMPLETED);
+                    fireTableCellUpdated(rowIndex, columnIndex);
+
+                    // check other menu items whether completed
+                    boolean allCompleted = true;
+                    for (MenuItem item: order.getMenuItems()) {
+                        if (item.getStatus() != MenuItemImpl.STATUS_COMPLETED) {
+                            allCompleted = false;
+                            break;
+                        }
+                    }
+                    // and when to complete the order!
+                    if (allCompleted) {
+                        order.completed();
+                    }
+                }
+            } else if (columnIndex == 3) {
+                int newStatus = (boolean)aValue ? MenuItemImpl.STATUS_NORMAL : MenuItemImpl.STATUS_CANCEL;
+                menuItem.setStatus(newStatus);
+                fireTableCellUpdated(rowIndex, 2);
+                fireTableCellUpdated(rowIndex, 3);
+            }
+
+        }
+
+        public void fireAllUpdate() {
+            fireTableRowsUpdated(0, getRowCount() - 1);
         }
     }
 
@@ -604,8 +650,10 @@ public class OrderImpl implements Order {
                 } else {
                     orders.get(rowIndex).completed();
                 }
+                fireTableCellUpdated(rowIndex, columnIndex);
+            } else {
+                super.setValueAt(aValue, rowIndex, columnIndex);
             }
-            super.setValueAt(aValue, rowIndex, columnIndex);
         }
     }
 }

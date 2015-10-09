@@ -1,5 +1,7 @@
 package com.nightwind.mealordering.model;
 
+import java.awt.event.ActionListener;
+
 /**
  * Created by nightwind on 15/7/6.
  */
@@ -16,4 +18,8 @@ public interface MenuItem {
     Integer getStatus();
 
     void setStatus(Integer status);
+
+    void addActionListener(ActionListener listener);
+
+    void removeActionListener(ActionListener listener);
 }

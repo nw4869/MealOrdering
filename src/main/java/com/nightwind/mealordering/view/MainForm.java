@@ -24,6 +24,7 @@ public class MainForm implements ActionListener{
     private double cost = 0;
     private UserAdminForm userAdminForm;
     private UserInfoForm userInfoForm;
+    private OrderManageForm orderManageForm;
 
     public MainForm() {
         commitButton.addActionListener(new ActionListener() {
@@ -66,7 +67,10 @@ public class MainForm implements ActionListener{
         orderManageItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                OrderManageForm.show(true);
+                model.removeActionListener(orderManageForm);
+                orderManageForm = new OrderManageForm(true);
+                model.addActionListener(orderManageForm);
+                orderManageForm.show();
             }
         });
         orderMenu.add(orderManageItem);

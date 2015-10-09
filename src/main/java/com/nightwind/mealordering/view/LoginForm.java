@@ -51,7 +51,7 @@ public class LoginForm {
 
                 if (user.isChef()) {
                     frame.setVisible(false);
-                    OrderManageForm.show(false);
+                    new OrderManageForm().show();
                 } else {
 
 //            JOptionPane.showMessageDialog(null, "Login success", "Login success", JOptionPane.INFORMATION_MESSAGE);
