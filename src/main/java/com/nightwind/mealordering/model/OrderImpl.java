@@ -11,9 +11,7 @@ import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by nightwind on 15/7/11.
@@ -72,7 +70,7 @@ public class OrderImpl implements Order {
                 query = session.createQuery("from OrderEntity");
             }
 
-            for (Object entity: query.list()) {
+            for (Object entity : query.list()) {
                 OrderEntity orderEntity = (OrderEntity) entity;
 
                 // get menus
@@ -80,8 +78,8 @@ public class OrderImpl implements Order {
                 cr.add(Restrictions.eq("orderId", orderEntity.getId()));
 
                 List<MenuItem> menuItems = new ArrayList<>();
-                for (Object menuItemEntity: cr.list()) {
-                   menuItems.add(new MenuItemImpl((MenuEntity) menuItemEntity));
+                for (Object menuItemEntity : cr.list()) {
+                    menuItems.add(new MenuItemImpl((MenuEntity) menuItemEntity));
                 }
 
                 orders.add(new OrderImpl(orderEntity, menuItems));
@@ -131,7 +129,7 @@ public class OrderImpl implements Order {
             session.save(orderEntity);
 
             // save menuItem
-            for (MenuItem item: menuItems) {
+            for (MenuItem item : menuItems) {
                 if (item.getNumber() > 0) {
                     MenuEntity menuEntity = new MenuEntity();
                     menuEntity.setOrderId(orderEntity.getId());
@@ -216,7 +214,7 @@ public class OrderImpl implements Order {
     @Override
     public void saveOrUpdateMenuItem(MenuItem menuItem) {
         boolean found = false;
-        for (MenuItem item: menuItems) {
+        for (MenuItem item : menuItems) {
             if (item.getDish().getId().equals(menuItem.getDish().getId())) {
                 found = true;
                 item.setNumber(menuItem.getNumber());
@@ -287,7 +285,7 @@ public class OrderImpl implements Order {
     }
 
     private void processEvent(ActionEvent e) {
-        for(ActionListener listener: listeners) {
+        for (ActionListener listener : listeners) {
             listener.actionPerformed(e);
         }
     }
@@ -297,7 +295,8 @@ public class OrderImpl implements Order {
     }
 
     public static class Status {
-        public Status() {}
+        public Status() {
+        }
 
         public Status(String value) {
             this.value = value;
@@ -323,6 +322,77 @@ public class OrderImpl implements Order {
             list.add(new Status(STATUS_CANCEL));
             list.add(new Status(STATUS_COMPLETED));
             LIST = new ArrayList<>(list);
+        }
+    }
+
+    public static class OverviewTableModel extends AbstractTableModel {
+
+//        private final List<Order> orders;
+        private final List<String> nameList = new ArrayList<>();
+        private final List<Integer> countList = new ArrayList<>();
+
+        protected final String[] DISPLAY_NAME = {"菜品", "数量"};
+
+        public OverviewTableModel() {
+            List<Order> orders = new OrderImpl().getAllOrder(false);
+            initList(orders);
+        }
+
+        public OverviewTableModel(List<Order> orders) {
+            // init list
+            initList(orders);
+        }
+
+        private void initList(List<Order> orders) {
+            Map<String, Integer> dishCountMap = new HashMap<>();
+            for (Order order : orders) {
+                // check normal order
+                if (order.getStatus().equals("normal")) {
+                    // count all menu item
+                    for (MenuItem menuItem : order.getMenuItems()) {
+                        String name = menuItem.getDish().getName();
+                        Integer count = dishCountMap.get(name);
+                        if (count == null) {
+                            count = 0;
+                        }
+                        count += menuItem.getNumber();
+                        dishCountMap.put(name, count);
+                    }
+                }
+            }
+            for (String key : dishCountMap.keySet()) {
+                nameList.add(key);
+                countList.add(dishCountMap.get(key));
+            }
+        }
+
+        @Override
+        public int getRowCount() {
+            return nameList.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return DISPLAY_NAME.length;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            Object object = null;
+            switch (columnIndex) {
+                case 0:
+                    object = nameList.get(rowIndex);
+                    break;
+                case 1:
+                    object = countList.get(rowIndex);
+                    break;
+            }
+            return object;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return DISPLAY_NAME[column];
         }
     }
 
@@ -382,7 +452,7 @@ public class OrderImpl implements Order {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return (columnIndex == 2 && (Boolean)getValueAt(0, 3)) || columnIndex == 3;
+            return (columnIndex == 2 && (Boolean) getValueAt(0, 3)) || columnIndex == 3;
         }
 
         @Override
@@ -404,7 +474,11 @@ public class OrderImpl implements Order {
         }
 
         public Order getOrder(int index) {
-            return orders.get(index);
+            if (0 <= index && index < orders.size()) {
+                return orders.get(index);
+            } else {
+                return null;
+            }
         }
 
         @Override
@@ -427,7 +501,7 @@ public class OrderImpl implements Order {
                     break;
                 case 1:
                     StringBuilder menuInfo = new StringBuilder();
-                    for (MenuItem item: order.getMenuItems()) {
+                    for (MenuItem item : order.getMenuItems()) {
                         Dish dish = item.getDish();
                         menuInfo.append(dish.getName()).append("*").append(item.getNumber()).append(", ");
                     }
@@ -467,7 +541,7 @@ public class OrderImpl implements Order {
         public void refresh() {
             orders = loadOrderList();
 //            fireTableRowsUpdated(0, orders.size());
-            fireTableRowsInserted(0, orders.size()-1);
+            fireTableRowsInserted(0, orders.size() - 1);
         }
 
         @Override
@@ -481,13 +555,17 @@ public class OrderImpl implements Order {
             if (aValue instanceof Status) {
                 if (aValue.toString().equals(STATUS_CANCEL)) {
                     order.cancel();
-                } else if (aValue.toString().equals(STATUS_NORMAL)){
+                } else if (aValue.toString().equals(STATUS_NORMAL)) {
                     order.enable();
                 } else {
                     order.completed();
                 }
                 fireTableCellUpdated(rowIndex, columnIndex);
             }
+        }
+
+        public List<Order> getOrders() {
+            return orders;
         }
     }
 

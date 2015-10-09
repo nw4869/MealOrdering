@@ -34,11 +34,13 @@ public class OrderManageForm {
     private JButton ResetButton;
     private JButton ResetButton2;
     private JTable detailTable;
+    private JTable overviewTable;
     private OrderImpl.OrdersTableModel ordersTableModel;
     private OrdersController controller;
     TableRowSorter<OrderImpl.OrdersTableModel> sorter;
     private static boolean sAdmin = false;
     private java.util.Timer timer;
+    private OrderImpl.OverviewTableModel overviewTableModel;
 
     public OrderManageForm() {
         comboBox1.addActionListener(e -> {
@@ -71,10 +73,25 @@ public class OrderManageForm {
         table1.setDefaultEditor(OrderImpl.Status.class, new StatusEditor(OrderImpl.Status.LIST));
         table1.setAutoCreateRowSorter(true);
         sorter = new TableRowSorter<>(ordersTableModel);
+        List <RowSorter.SortKey> sortKey = new ArrayList<>();
+        sortKey.add(new RowSorter.SortKey(0, SortOrder.DESCENDING));
+        sorter.setSortKeys(sortKey);
         table1.setRowSorter(sorter);
         table1.getSelectionModel().addListSelectionListener(e -> {
             // when selected show the menu items
+            if (e.getValueIsAdjusting())
+                return;
             controller.rowSelected(table1.getSelectedRow());
+        });
+
+        overviewTableModel = new OrderImpl.OverviewTableModel(ordersTableModel.getOrders());
+        overviewTable = new JTable(overviewTableModel);
+        overviewTable.setRowSorter(new TableRowSorter<>(overviewTableModel));
+        overviewTable.getSelectionModel().addListSelectionListener( e -> {
+            int row = overviewTable.getSelectedRow();
+            String dish = (String) overviewTableModel.getValueAt(row, 0);
+            comboBox2.setSelectedIndex(1);
+            filterField2.setText(dish);
         });
 
         filterField = new JTextField();
