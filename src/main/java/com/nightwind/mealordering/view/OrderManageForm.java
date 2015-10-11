@@ -4,6 +4,7 @@ import com.nightwind.mealordering.controller.OrdersController;
 import com.nightwind.mealordering.model.Order;
 import com.nightwind.mealordering.model.OrderImpl;
 
+import java.awt.print.PrinterException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -34,21 +35,25 @@ public class OrderManageForm implements ActionListener{
     private JButton ResetButton2;
     private JTable detailTable;
     private JTable overviewTable;
+    private JButton printButton;
+    private JLabel ordersNumberLabel;
+    private JLabel totalMoneyLabel;
     private OrderImpl.OrdersTableModel ordersTableModel;
     private OrdersController controller;
     TableRowSorter<OrderImpl.OrdersTableModel> sorter;
     private boolean admin = false;
     private java.util.Timer timer;
     private OrderImpl.OverviewTableModel overviewTableModel;
+    private List<Order> orders;
 
     public OrderManageForm() {
-        initListener();
+        initComponents();
     }
 
     public OrderManageForm(boolean admin) {
         this.admin = admin;
 
-        initListener();
+        initComponents();
     }
 
     public void showOrderMenuItemDetail(Order order) {
@@ -65,6 +70,7 @@ public class OrderManageForm implements ActionListener{
         } else {
             ordersTableModel = new OrderImpl.ChefOrdersTableModel();
         }
+        this.orders = ordersTableModel.getOrders();
         table1 = new JTable(ordersTableModel);
         table1.setDefaultRenderer(OrderImpl.Status.class, new StatusRender());
         table1.setDefaultEditor(OrderImpl.Status.class, new StatusEditor(OrderImpl.Status.LIST));
@@ -81,6 +87,7 @@ public class OrderManageForm implements ActionListener{
                 return;
             int row = table1.getSelectedRow();
             if (0 <= row && row < ordersTableModel.getRowCount()) {
+                row = table1.convertRowIndexToModel(row);
                 controller.rowSelected(row);
             }
         });
@@ -92,6 +99,7 @@ public class OrderManageForm implements ActionListener{
         overviewTable.getSelectionModel().addListSelectionListener( e -> {
             int row = overviewTable.getSelectedRow();
             if (0 <= row && row < overviewTableModel.getRowCount()) {
+                row = overviewTable.convertRowIndexToModel(row);
                 String dish = (String) overviewTableModel.getValueAt(row, 0);
                 comboBox2.setSelectedIndex(1);
                 filterField2.setText(dish);
@@ -128,7 +136,8 @@ public class OrderManageForm implements ActionListener{
         });
     }
 
-    private void initListener() {
+    private void initComponents() {
+        setupOrdersInfo(orders);
         comboBox1.addActionListener(e -> {
             newFilter();
         });
@@ -141,6 +150,18 @@ public class OrderManageForm implements ActionListener{
         ResetButton2.addActionListener(e -> {
             filterField2.setText("");
         });
+        printButton.addActionListener(e -> {
+            try {
+                table1.print();
+            } catch (PrinterException e1) {
+                e1.printStackTrace();
+            }
+        });
+    }
+
+    private void setupOrdersInfo(List<Order> orders) {
+        ordersNumberLabel.setText(String.valueOf(orders.size()));
+        totalMoneyLabel.setText(String.valueOf(OrderImpl.getTotalMoney(orders, true)));
     }
 
     @Override
@@ -149,7 +170,8 @@ public class OrderManageForm implements ActionListener{
             String cmd = e.getActionCommand();
             if (cmd.equals(OrderImpl.COMMIT)) {
                 controller.refresh();
-            } else if (cmd.equals(OrderImpl.COMPLETED)) {
+            } else if (cmd.equals(OrderImpl.ACTION_COMPLETED) || cmd.equals(OrderImpl.ACTION_CANCEL) ||
+                    cmd.equals(OrderImpl.ACTION_NORMAL)) {
                 controller.refresh();
                 ((OrderImpl.OrderDetailModel) detailTable.getModel()).fireAllUpdate();
             }
@@ -189,6 +211,13 @@ public class OrderManageForm implements ActionListener{
             return;
         }
         sorter.setRowFilter(rf);
+//        System.out.println("row count = " + table1.getRowCount());
+        List<Order> filteredOrders = new ArrayList<>();
+        for (int i = 0; i < table1.getRowCount(); i++) {
+            final int modelRow = table1.convertRowIndexToModel(i);
+            filteredOrders.add(orders.get(modelRow));
+        }
+        setupOrdersInfo(filteredOrders);
     }
 
     private class StatusRender extends DefaultTableCellRenderer {
@@ -259,7 +288,7 @@ public class OrderManageForm implements ActionListener{
 
         // auto refresh
 //        if (!admin) {
-//            view.refreshPeriod(30000);
+            view.refreshPeriod(30000);
 //        }
     }
 

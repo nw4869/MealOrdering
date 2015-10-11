@@ -21,8 +21,9 @@ public class OrderImpl implements Order {
     public static final java.lang.String ADD_MENU_ITEM = "add_menu_item";
     public static final String REMOVE_MENU_ITEM = "remove_menu_item";
     public static final String COMMIT = "commit";
-    public static final String CANCEL = "cancel";
-    public static final String COMPLETED = "completed";
+    public static final String ACTION_CANCEL = "cancel";
+    public static final String ACTION_COMPLETED = "completed";
+    public static final String ACTION_NORMAL = "normal";
     public static final java.lang.String UPDATE_MENU_ITEM = "update_menu_item";
     public static final java.lang.String CLEAR = "clear";
     public static final String REFRESH = "refresh";
@@ -111,7 +112,10 @@ public class OrderImpl implements Order {
     public double getTotalCost() {
         double cost = 0;
         for (MenuItem item : getMenuItems()) {
-            cost += item.getDish().getCost() * item.getNumber();
+            final int STATUS_ITEM_CANCEL = 2;
+            if (item.getStatus() != STATUS_ITEM_CANCEL) {
+                cost += item.getDish().getCost() * item.getNumber();
+            }
         }
         return cost;
     }
@@ -159,12 +163,22 @@ public class OrderImpl implements Order {
         try {
             tx = session.beginTransaction();
 
+            // cancel menu items
+//            Query query = session.createQuery("update MenuEntity set status = 2 where orderId = :orderId");
+//            query.setInteger("orderId", id);
+//            query.executeUpdate();
+
+            for (MenuItem menuItem: menuItems) {
+                menuItem.setStatus(0);
+            }
+
             OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
             entity.setStatus(STATUS_CANCEL);
             session.update(entity);
 
             tx.commit();
             status = STATUS_CANCEL;
+            processEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CANCEL));
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
             status = STATUS_NORMAL;
@@ -182,12 +196,20 @@ public class OrderImpl implements Order {
         try {
             tx = session.beginTransaction();
 
+            for (MenuItem menuItem: menuItems) {
+                // 将完成的变成未完成，已取消的不变
+                if (menuItem.getStatus() == 1) {
+                    menuItem.setStatus(0);
+                }
+            }
+
             OrderEntity entity = (OrderEntity) session.get(OrderEntity.class, id);
             entity.setStatus(STATUS_NORMAL);
             session.update(entity);
 
             tx.commit();
             status = STATUS_NORMAL;
+            processEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_NORMAL));
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
             status = STATUS_CANCEL;
@@ -272,9 +294,9 @@ public class OrderImpl implements Order {
             tx = session.beginTransaction();
 
             // completed menu items
-            Query query = session.createQuery("update MenuEntity set status = 1 where status = 0 and orderId = :orderId");
-            query.setInteger("orderId", id);
-            query.executeUpdate();
+//            Query query = session.createQuery("update MenuEntity set status = 1 where status = 0 and orderId = :orderId");
+//            query.setInteger("orderId", id);
+//            query.executeUpdate();
 
             for (MenuItem menuItem: menuItems) {
                 if (menuItem.getStatus() == 0) {
@@ -289,7 +311,7 @@ public class OrderImpl implements Order {
 
             tx.commit();
             status = STATUS_COMPLETED;
-            processEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, COMPLETED));
+            processEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_COMPLETED));
         } catch (HibernateException e) {
             if (tx != null) tx.rollback();
             status = org;
@@ -340,6 +362,20 @@ public class OrderImpl implements Order {
         }
     }
 
+    public static double getTotalMoney(List<Order> orders, boolean forAllOrders) {
+        double totalMoney = 0;
+        for (Order order: orders) {
+            String status = order.getStatus();
+            if ((forAllOrders && !status.equals(STATUS_CANCEL)) || status.equals(STATUS_NORMAL)) {
+                totalMoney += order.getTotalCost();
+            }
+        }
+        return totalMoney;
+    }
+
+    /**
+     *  表数据模型： 所有订单的概要（每个菜品的总数表）
+     */
     public static class OverviewTableModel extends AbstractTableModel {
 
 //        private final List<Order> orders;
@@ -358,7 +394,8 @@ public class OrderImpl implements Order {
             Map<String, Integer> dishCountMap = new HashMap<>();
             for (Order order : orders) {
                 // check normal order
-                if (forAllOrders || order.getStatus().equals(STATUS_NORMAL)) {
+                String status = order.getStatus();
+                if ((forAllOrders && !status.equals(STATUS_CANCEL)) || status.equals(STATUS_NORMAL)) {
                     // count all menu item
                     for (MenuItem menuItem : order.getMenuItems()) {
                         String name = menuItem.getDish().getName();
@@ -412,6 +449,9 @@ public class OrderImpl implements Order {
         }
     }
 
+    /**
+     *  表数据模型： 某个订单的具体菜品和数目表
+     */
     public static class OrderDetailModel extends AbstractTableModel {
 
         protected Order order;
@@ -511,6 +551,10 @@ public class OrderImpl implements Order {
         }
     }
 
+
+    /**
+     *  表数据模型： 所有订票
+     */
     public static class OrdersTableModel extends AbstractTableModel {
 
         protected List<Order> orders = loadOrderList();
@@ -544,7 +588,11 @@ public class OrderImpl implements Order {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             Object obj = null;
-            Order order = orders.get(rowIndex);
+            Order order = new OrderImpl();
+            if (getRowCount() > 0) {
+                order = orders.get(rowIndex);
+            } else {
+            }
             switch (columnIndex) {
                 case 0:
                     obj = order.getId();
